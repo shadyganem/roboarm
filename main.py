@@ -25,7 +25,6 @@ def polling_thread():
     while(True):
         try:
             with urllib.request.urlopen('http://shadyganem.com/MotorData.json') as response:
-                print(str(dir(response)))
                 res = response.read(100)
                 response_dict = json.loads(res.decode())
 
