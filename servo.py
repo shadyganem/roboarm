@@ -25,7 +25,7 @@ class motor:
         self.pca.frequency = 50
         self.previos_angle = 90
         self.offset = offset
-            
+        
     def set_angle(self,direction):
         self.servo = servo.Servo(self.pca.channels[self.channel])
         self.servo.angle = direction
