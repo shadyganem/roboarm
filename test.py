@@ -1,7 +1,7 @@
-from DistanceSensor import *
- 
+from TempSensor import *
+
 if __name__ == '__main__':
-    DS = dist_sensor(4,17)
+    DHT11 = temp_sensor(23)
     while True:
-        dist = DS.get_distance()
-        print("Measured Distance = %.1f cm" % dist)
+        Humidity , Temperature = DHT11.get_temp_and_hum()
+        print("Temperature : {}C, Humidity : {}%".format(Temperature, Humidity))
