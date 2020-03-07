@@ -1,22 +1,32 @@
 from TempSensor import *
 from servo import *
+from DistanceSensor import *
 import sys
 
 if __name__ == '__main__':
+    # ds = dist_sensor(4,17)
+    # while True:
+        
+    #     distance = ds.get_distance()
+    #     print(distance)
+
+
+
+
     angle = sys.argv[1]
     motor_i = sys.argv[2]
 
 
     m_to_c_dict = dict()
-    m_to_c_dict['1'] = 7
-    m_to_c_dict['2'] = 1
-    m_to_c_dict['3'] = 2
-    m_to_c_dict['4'] = 3
-    m_to_c_dict['5'] = 4
+    m_to_c_dict['1'] = 0
+    m_to_c_dict['2'] = 3
+    m_to_c_dict['3'] = 6
+    m_to_c_dict['4'] = 9
+    m_to_c_dict['5'] = 12
 
     channel =  m_to_c_dict[motor_i]
-
-    motor1 = motor(channel,90)
+    driver = servo_driver()
+    motor1 = motor(driver, channel,0)
 
     motor1.set_angle(int(angle))
 

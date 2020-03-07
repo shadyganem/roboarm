@@ -17,17 +17,13 @@ from adafruit_pca9685 import PCA9685
 from adafruit_motor import servo
 
 
-
-
 class servo_driver:
     def __init__(self):
         self.i2c = busio.I2C(SCL,SDA)
         self.pca = PCA9685(self.i2c)
         self.pca.frequency = 50
-        print("servo_driver __init__")
 
     def get_channel(self,channel):
-        print("get_channel")
         return self.pca.channels[channel]
 
 class motor():

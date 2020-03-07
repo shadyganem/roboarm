@@ -1,5 +1,6 @@
 from servo import *
 from TempSensor import *
+from DistanceSensor import *
 import time
 import threading
 import json
@@ -18,9 +19,11 @@ command["motor2"] = 0  #arm up down
 command["motor3"] = 0  #arm forward backward
 command["motor4"] = 0  #gripper clockwise counter clockwose
 command["motor5"] = 90 #gripper open close
-program = "manual"
-program_flag = False
 
+global program
+program = "manual"
+global program_flag
+program_flag = False
 global Humidity
 Humidity = 0
 global Temperature
@@ -31,13 +34,14 @@ def update_sensor_vals():
     global Temperature
     while(True):
         Humidity , Temperature = DHT11.get_temp_and_hum()
-
         time.sleep(0.2)
 
 def polling_thread():
     response_dict = dict()
     global Temperature
     global Humidity
+    global program
+    global program_flag
     while(True):
         print("humidity {}".format(Humidity))
         print("Temperature {}".format(Temperature))
@@ -56,10 +60,10 @@ def polling_thread():
                 command["motor5"] = int(response_dict.get("motor5",90))
                 command["motor3"] = int(response_dict.get("motor3",90))
                 command["motor4"] = int(response_dict.get("motor4",90))
-            elif program_flag == True:
+            elif program_flag == False:
                 print("selected mode = {}".format(mode))
                 program = mode
-                program_flag = False
+                
 
             for key,val in response_dict.items():
                 print(key+" : "+val)
@@ -68,19 +72,23 @@ def polling_thread():
 
 
 def main():
-
+    global program
+    global program_flag
     get_commamds = threading.Thread(target=polling_thread)
     get_commamds.start()
 
+
+
     read_sensor = threading.Thread(target=update_sensor_vals)
     read_sensor.start()
-
+    distance_sensor = dist_sensor(4,17)
     driver = servo_driver()
     motor1 = motor(driver,0,90)
     motor2 = motor(driver,3,0)
     motor3 = motor(driver,6,0)
     motor4 = motor(driver,9,0)
     motor5 = motor(driver,12,0)
+    virtual_motor = motor(driver,15,0)
 
     while(True):
         if program == "manual":
@@ -89,17 +97,16 @@ def main():
             motor3.set_angle(command["motor3"])
             motor4.set_angle(command["motor4"])
             motor5.set_angle(command["motor5"])
+            virtual_motor.set_angle(90)
+            
         elif program == "program1":
-            if program_flag == False:
-                program_list = programs_dict[program]
-                print(prograam_list)
-                for angle_list in program_list:
-                    motor1.set_angle(angle_list[0])
-                    motor2.set_angle(angle_list[1])
-                    motor3.set_angle(angle_list[2])
-                    motor4.set_angle(angle_list[3])
-                    motor5.set_angle(angle_list[4])
-                program_flag = True
+            program_flag = True
+            
+
+
+
+
+            program_flag == False 
     get_commamds.join()
 
 if __name__=="__main__":
