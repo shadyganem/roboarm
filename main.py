@@ -43,8 +43,6 @@ def polling_thread():
     global program
     global program_flag
     while(True):
-        print("humidity {}".format(Humidity))
-        print("Temperature {}".format(Temperature))
         data = urlencode({"humidity":Humidity,"temperature":Temperature}).encode()
         url = 'http://shadyganem.com/dataExchange.php'
         try:
@@ -60,27 +58,73 @@ def polling_thread():
                 command["motor5"] = int(response_dict.get("motor5",90))
                 command["motor3"] = int(response_dict.get("motor3",90))
                 command["motor4"] = int(response_dict.get("motor4",90))
-            elif program_flag == False:
+            else:
                 print("selected mode = {}".format(mode))
                 program = mode
                 
 
             for key,val in response_dict.items():
                 print(key+" : "+val)
-        except:
-            print("\033[91mConnection with server is down\033[0m")
+        except Exception as e:
+            print("\033[91mConnection with server is down\033[0m {}".format(str(e)))
+
+def main2():
+    global Temperature
+    global Humidity
+    global program
+    global program_flag
+    import socket
+    Host = "160.153.249.247"
+    Port = 1234
+    try:
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect((Host,Port))
+        print("connected")
+    except Exception as e:
+        print(f"can't connect to {Host} at port {Port} closing socket")
+        raise e
+    finally:
+        client_socket.close()
+
+    out_msg = f'"humidity":{Humidity},"temperature":{Temperature}"'
+    try:
+        while True:
+            client_socket.send(bytes(out_msg,'utf-8'))
+            msg = client_socket.recv(1024)
+            print(msg.decode('utf-8'))
+            response_dict = json.loads(msg.decode('utf-8'))
+            mode = response_dict.get("mode","manual")
+            if mode == "manual":
+                command["motor1"] = int(response_dict.get("motor1",90))
+                command["motor2"] = int(response_dict.get("motor2",90))
+                command["motor5"] = int(response_dict.get("motor5",90))
+                command["motor3"] = int(response_dict.get("motor3",90))
+                command["motor4"] = int(response_dict.get("motor4",90))
+            else:
+                print("selected mode = {}".format(mode))
+                program = mode
+    except Exception as e:
+        client_socket.close()
+        print("socket closed")
+        raise e
+    except KeyboardInterrupt:
+        print("FUCK YOU ALL")
+    finally:
+        client_socket.close()
+
+
+
 
 
 def main():
     global program
     global program_flag
-    get_commamds = threading.Thread(target=polling_thread)
+    get_commamds = threading.Thread(target=main2)
     get_commamds.start()
-
-
 
     read_sensor = threading.Thread(target=update_sensor_vals)
     read_sensor.start()
+
     distance_sensor = dist_sensor(4,17)
     driver = servo_driver()
     motor1 = motor(driver,0,90)
@@ -101,12 +145,15 @@ def main():
             
         elif program == "program1":
             program_flag = True
+
+
+            print("running program1")
             
 
 
+            program = "manual"
 
 
-            program_flag == False 
     get_commamds.join()
 
 if __name__=="__main__":
